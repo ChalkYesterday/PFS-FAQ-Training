@@ -52,34 +52,18 @@
             color: black;
             border: 1px solid #ddd;
         }
-        .action-buttons {
-            display: none;
+        .delete-btn {
             margin-top: 10px;
-            justify-content: flex-end;
-        }
-        .action-buttons button {
-            padding: 5px 10px;
-            margin-left: 10px;
-            font-size: 14px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-        }
-        .action-buttons button.edit {
-            background-color: #007BFF;
-            color: white;
-        }
-        .action-buttons button.delete {
             background-color: red;
             color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
         }
-        .action-buttons button.save {
-            background-color: green;
-            color: white;
-        }
-        .action-buttons button.cancel {
-            background-color: gray;
-            color: white;
+        .delete-btn:hover {
+            opacity: 0.9;
         }
         .add-faq-form {
             margin-top: 30px;
@@ -104,21 +88,9 @@
     </style>
 </head>
 <body>
-    <h1>FAQ Page</h1>
+    <h1>Training FAQ</h1>
     <div class="faq-container" id="faqContainer">
-        <div class="faq-item">
-            <div class="faq-question">
-                What is the purpose of this training? 
-                <span class="arrow">▶</span>
-            </div>
-            <div class="faq-answer">
-                This training is designed to help you understand the tools and resources available for your role and how to use them effectively.
-            </div>
-            <div class="action-buttons">
-                <button class="edit">Edit</button>
-                <button class="delete">Delete</button>
-            </div>
-        </div>
+        <!-- FAQs will be dynamically loaded here -->
     </div>
 
     <div class="add-faq-form">
@@ -129,119 +101,90 @@
     </div>
 
     <footer>
-        © 2025 Primeritus Financial Services | FAQ Page
+        © 2025 Primeritus Financial Services | Training FAQ Page
     </footer>
 
     <script>
+        const siteUrl = "https://primeritus.sharepoint.com/sites/PrimeritusConnect/"; // Replace with your SharePoint site URL
+        const listName = "Training FAQ List";
+
+        // Function to load FAQs from SharePoint
+        async function loadFaqs() {
+            const response = await fetch(`${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`, {
+                headers: {
+                    "Accept": "application/json;odata=verbose"
+                }
+            });
+            const data = await response.json();
+            const faqContainer = document.getElementById("faqContainer");
+            faqContainer.innerHTML = ""; // Clear existing FAQs
+            data.d.results.forEach(item => {
+                const faqItem = document.createElement("div");
+                faqItem.classList.add("faq-item");
+                faqItem.innerHTML = `
+                    <div class="faq-question">${item.Question} <span class="arrow">▶</span></div>
+                    <div class="faq-answer">${item.Answer}</div>
+                    <button class="delete-btn" data-id="${item.Id}">Delete</button>
+                `;
+                faqItem.querySelector(".faq-question").addEventListener("click", toggleAnswer);
+                faqItem.querySelector(".delete-btn").addEventListener("click", deleteFaq);
+                faqContainer.appendChild(faqItem);
+            });
+        }
+
         // Function to toggle FAQ visibility
         function toggleAnswer(event) {
-            const faqItem = event.currentTarget.closest('.faq-item');
-            const answer = faqItem.querySelector('.faq-answer');
-            const actionButtons = faqItem.querySelector('.action-buttons');
-            answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
-            actionButtons.style.display = actionButtons.style.display === 'flex' ? 'none' : 'flex';
+            const answer = event.currentTarget.nextElementSibling;
+            answer.style.display = answer.style.display === "block" ? "none" : "block";
         }
 
         // Function to delete an FAQ
-        function deleteFaq(event) {
-            const faqItem = event.target.closest('.faq-item');
-            faqItem.remove();
-        }
-
-        // Function to edit an FAQ
-        function editFaq(event) {
-            const faqItem = event.target.closest('.faq-item');
-            const question = faqItem.querySelector('.faq-question');
-            const answer = faqItem.querySelector('.faq-answer');
-
-            // Replace question and answer with input fields
-            const questionText = question.firstChild.textContent.trim();
-            const answerText = answer.textContent.trim();
-
-            question.innerHTML = `<input type="text" value="${questionText}" style="width: 100%; font-size: 18px; padding: 5px;">`;
-            answer.innerHTML = `<textarea style="width: 100%; font-size: 16px; padding: 5px;">${answerText}</textarea>`;
-
-            // Show Save and Cancel buttons
-            const actionButtons = faqItem.querySelector('.action-buttons');
-            actionButtons.innerHTML = `
-                <button class="save">Save</button>
-                <button class="cancel">Cancel</button>
-            `;
-
-            actionButtons.querySelector('.save').addEventListener('click', () => saveEdit(faqItem));
-            actionButtons.querySelector('.cancel').addEventListener('click', () => cancelEdit(faqItem, questionText, answerText));
-        }
-
-        // Function to save edits
-        function saveEdit(faqItem) {
-            const questionInput = faqItem.querySelector('.faq-question input');
-            const answerInput = faqItem.querySelector('.faq-answer textarea');
-
-            faqItem.querySelector('.faq-question').innerHTML = `${questionInput.value} <span class="arrow">▶</span>`;
-            faqItem.querySelector('.faq-answer').textContent = answerInput.value;
-
-            // Restore Edit and Delete buttons
-            const actionButtons = faqItem.querySelector('.action-buttons');
-            actionButtons.innerHTML = `
-                <button class="edit">Edit</button>
-                <button class="delete">Delete</button>
-            `;
-
-            actionButtons.querySelector('.edit').addEventListener('click', editFaq);
-            actionButtons.querySelector('.delete').addEventListener('click', deleteFaq);
-        }
-
-        // Function to cancel edits
-        function cancelEdit(faqItem, originalQuestion, originalAnswer) {
-            faqItem.querySelector('.faq-question').innerHTML = `${originalQuestion} <span class="arrow">▶</span>`;
-            faqItem.querySelector('.faq-answer').textContent = originalAnswer;
-
-            const actionButtons = faqItem.querySelector('.action-buttons');
-            actionButtons.innerHTML = `
-                <button class="edit">Edit</button>
-                <button class="delete">Delete</button>
-            `;
-
-            actionButtons.querySelector('.edit').addEventListener('click', editFaq);
-            actionButtons.querySelector('.delete').addEventListener('click', deleteFaq);
+        async function deleteFaq(event) {
+            const faqId = event.target.dataset.id;
+            await fetch(`${siteUrl}/_api/web/lists/getbytitle('${listName}')/items(${faqId})`, {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "X-RequestDigest": document.getElementById("__REQUESTDIGEST").value,
+                    "IF-MATCH": "*",
+                    "X-HTTP-Method": "DELETE"
+                }
+            });
+            loadFaqs(); // Reload FAQs
         }
 
         // Function to add a new FAQ
-        function addFaq() {
-            const questionText = document.getElementById('newQuestion').value;
-            const answerText = document.getElementById('newAnswer').value;
+        async function addFaq() {
+            const question = document.getElementById("newQuestion").value;
+            const answer = document.getElementById("newAnswer").value;
 
-            if (!questionText || !answerText) {
-                alert('Please fill in both the question and answer.');
+            if (!question || !answer) {
+                alert("Please fill in both the question and answer.");
                 return;
             }
 
-            const faqItem = document.createElement('div');
-            faqItem.classList.add('faq-item');
-            faqItem.innerHTML = `
-                <div class="faq-question">${questionText} <span class="arrow">▶</span></div>
-                <div class="faq-answer">${answerText}</div>
-                <div class="action-buttons">
-                    <button class="edit">Edit</button>
-                    <button class="delete">Delete</button>
-                </div>
-            `;
+            await fetch(`${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`, {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "Content-Type": "application/json;odata=verbose",
+                    "X-RequestDigest": document.getElementById("__REQUESTDIGEST").value
+                },
+                body: JSON.stringify({
+                    __metadata: { type: "SP.Data.Training_x0020_FAQ_x0020_ListListItem" },
+                    Question: question,
+                    Answer: answer
+                })
+            });
 
-            faqItem.querySelector('.faq-question').addEventListener('click', toggleAnswer);
-            faqItem.querySelector('.edit').addEventListener('click', editFaq);
-            faqItem.querySelector('.delete').addEventListener('click', deleteFaq);
-
-            document.getElementById('faqContainer').appendChild(faqItem);
-
-            document.getElementById('newQuestion').value = '';
-            document.getElementById('newAnswer').value = '';
+            document.getElementById("newQuestion").value = "";
+            document.getElementById("newAnswer").value = "";
+            loadFaqs(); // Reload FAQs
         }
 
-        // Initialize event listeners
-        document.querySelectorAll('.faq-question').forEach(q => q.addEventListener('click', toggleAnswer));
-        document.querySelectorAll('.edit').forEach(btn => btn.addEventListener('click', editFaq));
-        document.querySelectorAll('.delete').forEach(btn => btn.addEventListener('click', deleteFaq));
-        document.getElementById('addFaqBtn').addEventListener('click', addFaq);
+        // Initialize page
+        document.getElementById("addFaqBtn").addEventListener("click", addFaq);
+        loadFaqs();
     </script>
 </body>
 </html>
