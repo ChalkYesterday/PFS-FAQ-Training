@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ Page</title>
     <style>
-        /* General Page Styling */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f9f9f9;
@@ -25,59 +24,63 @@
             border-radius: 8px;
             padding: 20px;
         }
-
-        /* FAQ Item Styles */
         .faq-item {
             margin-bottom: 15px;
             border-radius: 5px;
             overflow: hidden;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f5f5f5;
         }
         .faq-question {
             background-color: black;
             color: white;
             font-size: 18px;
             font-weight: bold;
-            padding: 15px;
-            cursor: pointer;
+            padding: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
         }
         .faq-answer {
-            display: none;
             font-size: 16px;
-            padding: 15px;
+            padding: 10px;
+            margin-top: 10px;
+            display: none;
             background-color: white;
             color: black;
-            line-height: 1.6;
             border: 1px solid #ddd;
-            border-top: none;
         }
-
-        /* Action Buttons */
         .action-buttons {
             display: none;
             margin-top: 10px;
             justify-content: flex-end;
         }
         .action-buttons button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
             padding: 5px 10px;
             margin-left: 10px;
-            cursor: pointer;
-            border-radius: 5px;
             font-size: 14px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .action-buttons button.edit {
+            background-color: #007BFF;
+            color: white;
         }
         .action-buttons button.delete {
             background-color: red;
+            color: white;
         }
-        .action-buttons button:hover {
-            opacity: 0.9;
+        .action-buttons button.save {
+            background-color: green;
+            color: white;
         }
-
-        /* Add FAQ Form */
+        .action-buttons button.cancel {
+            background-color: gray;
+            color: white;
+        }
         .add-faq-form {
             margin-top: 30px;
             padding: 20px;
@@ -97,17 +100,6 @@
             border: none;
             cursor: pointer;
             border-radius: 5px;
-        }
-        .add-faq-form button:hover {
-            background-color: #45a049;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #888;
         }
     </style>
 </head>
@@ -143,20 +135,11 @@
     <script>
         // Function to toggle FAQ visibility
         function toggleAnswer(event) {
-            const question = event.currentTarget;
-            const answer = question.nextElementSibling;
-            const actionButtons = question.parentElement.querySelector('.action-buttons');
-            const arrow = question.querySelector('.arrow');
-
-            if (answer.style.display === 'block') {
-                answer.style.display = 'none';
-                actionButtons.style.display = 'none';
-                arrow.classList.remove('rotate');
-            } else {
-                answer.style.display = 'block';
-                actionButtons.style.display = 'flex';
-                arrow.classList.add('rotate');
-            }
+            const faqItem = event.currentTarget.closest('.faq-item');
+            const answer = faqItem.querySelector('.faq-answer');
+            const actionButtons = faqItem.querySelector('.action-buttons');
+            answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+            actionButtons.style.display = actionButtons.style.display === 'flex' ? 'none' : 'flex';
         }
 
         // Function to delete an FAQ
@@ -171,12 +154,56 @@
             const question = faqItem.querySelector('.faq-question');
             const answer = faqItem.querySelector('.faq-answer');
 
-            // Prompt user for new values
-            const newQuestion = prompt('Edit the question:', question.textContent.trim());
-            const newAnswer = prompt('Edit the answer:', answer.textContent.trim());
+            // Replace question and answer with input fields
+            const questionText = question.firstChild.textContent.trim();
+            const answerText = answer.textContent.trim();
 
-            if (newQuestion !== null) question.firstChild.textContent = newQuestion;
-            if (newAnswer !== null) answer.textContent = newAnswer;
+            question.innerHTML = `<input type="text" value="${questionText}" style="width: 100%; font-size: 18px; padding: 5px;">`;
+            answer.innerHTML = `<textarea style="width: 100%; font-size: 16px; padding: 5px;">${answerText}</textarea>`;
+
+            // Show Save and Cancel buttons
+            const actionButtons = faqItem.querySelector('.action-buttons');
+            actionButtons.innerHTML = `
+                <button class="save">Save</button>
+                <button class="cancel">Cancel</button>
+            `;
+
+            actionButtons.querySelector('.save').addEventListener('click', () => saveEdit(faqItem));
+            actionButtons.querySelector('.cancel').addEventListener('click', () => cancelEdit(faqItem, questionText, answerText));
+        }
+
+        // Function to save edits
+        function saveEdit(faqItem) {
+            const questionInput = faqItem.querySelector('.faq-question input');
+            const answerInput = faqItem.querySelector('.faq-answer textarea');
+
+            faqItem.querySelector('.faq-question').innerHTML = `${questionInput.value} <span class="arrow">▶</span>`;
+            faqItem.querySelector('.faq-answer').textContent = answerInput.value;
+
+            // Restore Edit and Delete buttons
+            const actionButtons = faqItem.querySelector('.action-buttons');
+            actionButtons.innerHTML = `
+                <button class="edit">Edit</button>
+                <button class="delete">Delete</button>
+            `;
+
+            actionButtons.querySelector('.edit').addEventListener('click', editFaq);
+            actionButtons.querySelector('.delete').addEventListener('click', deleteFaq);
+        }
+
+        // Function to cancel edits
+        function cancelEdit(faqItem, originalQuestion, originalAnswer) {
+            faqItem.querySelector('.faq-question').innerHTML = `${originalQuestion} <span class="arrow">▶</span>`;
+            faqItem.querySelector('.faq-answer').textContent = originalAnswer;
+
+            const actionButtons = faqItem.querySelector('.action-buttons');
+            actionButtons.innerHTML = `
+                <button class="edit">Edit</button>
+                <button class="delete">Delete</button>
+            `;
+
+            actionButtons.querySelector('.edit').addEventListener('click', editFaq);
+            actionButtons.querySelector('.delete').addEventListener('click', deleteFaq);
         }
 
         // Function to add a new FAQ
@@ -192,30 +219,28 @@
             const faqItem = document.createElement('div');
             faqItem.classList.add('faq-item');
             faqItem.innerHTML = `
-                <div class="faq-question">
-                    ${questionText} <span class="arrow">▶</span>
-                </div>
+                <div class="faq-question">${questionText} <span class="arrow">▶</span></div>
                 <div class="faq-answer">${answerText}</div>
                 <div class="action-buttons">
                     <button class="edit">Edit</button>
                     <button class="delete">Delete</button>
                 </div>
             `;
+
             faqItem.querySelector('.faq-question').addEventListener('click', toggleAnswer);
-            faqItem.querySelector('.delete').addEventListener('click', deleteFaq);
             faqItem.querySelector('.edit').addEventListener('click', editFaq);
+            faqItem.querySelector('.delete').addEventListener('click', deleteFaq);
 
             document.getElementById('faqContainer').appendChild(faqItem);
 
-            // Clear input fields
             document.getElementById('newQuestion').value = '';
             document.getElementById('newAnswer').value = '';
         }
 
-        // Initialize event listeners for existing FAQs
+        // Initialize event listeners
         document.querySelectorAll('.faq-question').forEach(q => q.addEventListener('click', toggleAnswer));
-        document.querySelectorAll('.delete').forEach(btn => btn.addEventListener('click', deleteFaq));
         document.querySelectorAll('.edit').forEach(btn => btn.addEventListener('click', editFaq));
+        document.querySelectorAll('.delete').forEach(btn => btn.addEventListener('click', deleteFaq));
         document.getElementById('addFaqBtn').addEventListener('click', addFaq);
     </script>
 </body>
