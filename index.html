@@ -5,72 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ Page</title>
     <style>
+        /* General Page Styling */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
         }
         .faq-container {
             max-width: 800px;
-            margin: auto;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
         }
+
+        /* FAQ Item Styles */
         .faq-item {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            padding: 10px;
-            position: relative;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eaeaea;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-item:hover {
+            background-color: #f5f5f5;
         }
         .faq-question {
-            cursor: pointer;
-            font-weight: bold;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #333;
         }
         .faq-answer {
             display: none;
-            padding: 10px 0;
+            font-size: 16px;
+            margin-top: 10px;
             color: #555;
+            line-height: 1.6;
         }
+
+        /* Arrow Styling */
         .arrow {
+            font-size: 18px;
+            color: #777;
             transition: transform 0.3s ease;
         }
         .arrow.rotate {
             transform: rotate(90deg);
         }
-        .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 12px;
-        }
+
+        /* Add FAQ Form */
         .add-faq-form {
-            margin-top: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f3f3f3;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
         .add-faq-form input, .add-faq-form button {
-            margin: 5px;
+            font-size: 16px;
             padding: 10px;
-            font-size: 14px;
+            margin: 5px 0;
+            width: calc(100% - 24px);
         }
         .add-faq-form button {
-            background-color: green;
+            background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
             border-radius: 5px;
+        }
+        .add-faq-form button:hover {
+            background-color: #45a049;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
         }
     </style>
 </head>
 <body>
+    <h1>FAQ Page</h1>
     <div class="faq-container" id="faqContainer">
-        <!-- Initial FAQs -->
         <div class="faq-item">
             <div class="faq-question">
                 What is the purpose of this training? 
@@ -79,16 +111,19 @@
             <div class="faq-answer">
                 This training is designed to help you understand the tools and resources available for your role and how to use them effectively.
             </div>
-            <button class="delete-btn">Delete</button>
         </div>
     </div>
 
-    <!-- Add FAQ Form -->
     <div class="add-faq-form">
+        <h3>Add a New FAQ</h3>
         <input type="text" id="newQuestion" placeholder="Enter your question" required>
         <input type="text" id="newAnswer" placeholder="Enter your answer" required>
         <button id="addFaqBtn">Add FAQ</button>
     </div>
+
+    <footer>
+        © 2025 Primeritus Financial Services | FAQ Page
+    </footer>
 
     <script>
         // Function to handle FAQ toggle
@@ -106,12 +141,6 @@
             }
         }
 
-        // Function to delete an FAQ
-        function deleteFaq(event) {
-            const faqItem = event.target.closest('.faq-item');
-            faqItem.remove();
-        }
-
         // Function to add a new FAQ
         function addFaq() {
             const questionText = document.getElementById('newQuestion').value;
@@ -122,41 +151,24 @@
                 return;
             }
 
-            // Create new FAQ item
             const faqItem = document.createElement('div');
             faqItem.classList.add('faq-item');
-
             faqItem.innerHTML = `
                 <div class="faq-question">
                     ${questionText} <span class="arrow">▶</span>
                 </div>
-                <div class="faq-answer">
-                    ${answerText}
-                </div>
-                <button class="delete-btn">Delete</button>
+                <div class="faq-answer">${answerText}</div>
             `;
-
-            // Append the new FAQ to the container
+            faqItem.querySelector('.faq-question').addEventListener('click', toggleAnswer);
             document.getElementById('faqContainer').appendChild(faqItem);
 
-            // Add event listeners to the new elements
-            faqItem.querySelector('.faq-question').addEventListener('click', toggleAnswer);
-            faqItem.querySelector('.delete-btn').addEventListener('click', deleteFaq);
-
-            // Clear input fields
+            // Clear inputs
             document.getElementById('newQuestion').value = '';
             document.getElementById('newAnswer').value = '';
         }
 
-        // Add event listeners to existing FAQs
-        document.querySelectorAll('.faq-question').forEach(question => {
-            question.addEventListener('click', toggleAnswer);
-        });
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', deleteFaq);
-        });
-
-        // Add event listener to the Add FAQ button
+        // Add event listeners
+        document.querySelectorAll('.faq-question').forEach(q => q.addEventListener('click', toggleAnswer));
         document.getElementById('addFaqBtn').addEventListener('click', addFaq);
     </script>
 </body>
