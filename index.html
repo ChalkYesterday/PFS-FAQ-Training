@@ -54,13 +54,27 @@
             border-top: none;
         }
 
-        /* Arrow Styling */
-        .arrow {
-            font-size: 18px;
-            transition: transform 0.3s ease;
+        /* Action Buttons */
+        .action-buttons {
+            display: none;
+            margin-top: 10px;
+            justify-content: flex-end;
         }
-        .arrow.rotate {
-            transform: rotate(90deg);
+        .action-buttons button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .action-buttons button.delete {
+            background-color: red;
+        }
+        .action-buttons button:hover {
+            opacity: 0.9;
         }
 
         /* Add FAQ Form */
@@ -108,6 +122,10 @@
             <div class="faq-answer">
                 This training is designed to help you understand the tools and resources available for your role and how to use them effectively.
             </div>
+            <div class="action-buttons">
+                <button class="edit">Edit</button>
+                <button class="delete">Delete</button>
+            </div>
         </div>
     </div>
 
@@ -123,19 +141,42 @@
     </footer>
 
     <script>
-        // Function to handle FAQ toggle
+        // Function to toggle FAQ visibility
         function toggleAnswer(event) {
             const question = event.currentTarget;
             const answer = question.nextElementSibling;
+            const actionButtons = question.parentElement.querySelector('.action-buttons');
             const arrow = question.querySelector('.arrow');
 
             if (answer.style.display === 'block') {
                 answer.style.display = 'none';
+                actionButtons.style.display = 'none';
                 arrow.classList.remove('rotate');
             } else {
                 answer.style.display = 'block';
+                actionButtons.style.display = 'flex';
                 arrow.classList.add('rotate');
             }
+        }
+
+        // Function to delete an FAQ
+        function deleteFaq(event) {
+            const faqItem = event.target.closest('.faq-item');
+            faqItem.remove();
+        }
+
+        // Function to edit an FAQ
+        function editFaq(event) {
+            const faqItem = event.target.closest('.faq-item');
+            const question = faqItem.querySelector('.faq-question');
+            const answer = faqItem.querySelector('.faq-answer');
+
+            // Prompt user for new values
+            const newQuestion = prompt('Edit the question:', question.textContent.trim());
+            const newAnswer = prompt('Edit the answer:', answer.textContent.trim());
+
+            if (newQuestion !== null) question.firstChild.textContent = newQuestion;
+            if (newAnswer !== null) answer.textContent = newAnswer;
         }
 
         // Function to add a new FAQ
@@ -155,17 +196,26 @@
                     ${questionText} <span class="arrow">▶</span>
                 </div>
                 <div class="faq-answer">${answerText}</div>
+                <div class="action-buttons">
+                    <button class="edit">Edit</button>
+                    <button class="delete">Delete</button>
+                </div>
             `;
             faqItem.querySelector('.faq-question').addEventListener('click', toggleAnswer);
+            faqItem.querySelector('.delete').addEventListener('click', deleteFaq);
+            faqItem.querySelector('.edit').addEventListener('click', editFaq);
+
             document.getElementById('faqContainer').appendChild(faqItem);
 
-            // Clear inputs
+            // Clear input fields
             document.getElementById('newQuestion').value = '';
             document.getElementById('newAnswer').value = '';
         }
 
-        // Add event listeners
+        // Initialize event listeners for existing FAQs
         document.querySelectorAll('.faq-question').forEach(q => q.addEventListener('click', toggleAnswer));
+        document.querySelectorAll('.delete').forEach(btn => btn.addEventListener('click', deleteFaq));
+        document.querySelectorAll('.edit').forEach(btn => btn.addEventListener('click', editFaq));
         document.getElementById('addFaqBtn').addEventListener('click', addFaq);
     </script>
 </body>
